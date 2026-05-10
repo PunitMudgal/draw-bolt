@@ -7,6 +7,7 @@ import {
   Footer,
 } from "@/components/homepage";
 import { Demo } from "@/components/homepage/demo";
+import { Workflow } from "@/components/homepage/workflow";
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
       <Header />
       <Hero />
       <Demo />
+      <Workflow />
       <Features />
       <Collaboration />
       <Pricing />

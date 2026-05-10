@@ -1,7 +1,8 @@
 import path from "node:path";
 import fs from "node:fs";
 import dotenv from "dotenv";
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
+import { PrismaClientKnownRequestError } from "@prisma/client-runtime-utils";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 // Load the package-local env file so workspace apps do not need to set DATABASE_URL
@@ -29,4 +30,6 @@ export const prismaClient = new PrismaClient({
   adapter: new PrismaPg(databaseUrl),
 });
 
-export { Prisma };
+export const Prisma = {
+  PrismaClientKnownRequestError,
+} as const;

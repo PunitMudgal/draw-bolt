@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/middleware.ts","./src/types/backend-common-config.d.ts","./src/types/express.d.ts"],"version":"5.9.2"}
+{"root":["./src/index.ts","./src/controllers/auth.ts","./src/controllers/chat.ts","./src/controllers/room.ts","./src/middlewares/async-handler.ts","./src/middlewares/error-handler.ts","./src/middlewares/middleware.ts","./src/routes/auth.ts","./src/routes/chat.ts","./src/routes/room.ts","./src/types/backend-common-config.d.ts","./src/types/express.d.ts","./src/utils/app-error.ts"],"version":"5.9.2"}

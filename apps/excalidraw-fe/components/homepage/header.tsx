@@ -42,12 +42,18 @@ export function Header() {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-4">
-            <button className="px-6 py-2 text-slate-300 hover:text-white transition-colors border border-slate-700 rounded-lg hover:border-slate-600">
+            <Link
+              href="/sign-in"
+              className="px-6 py-2 text-slate-300 hover:text-white transition-colors border border-slate-700 rounded-lg hover:border-slate-600"
+            >
               Sign In
-            </button>
-            <button className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors">
+            </Link>
+            <Link
+              href="/rooms"
+              className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors"
+            >
               Start Drawing
-            </button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -81,12 +87,18 @@ export function Header() {
               Pricing
             </a>
             <div className="flex gap-4 mt-4">
-              <button className="px-6 py-2 text-slate-300 border border-slate-700 rounded-lg">
+              <Link
+                href="/sign-in"
+                className="px-6 py-2 text-slate-300 border border-slate-700 rounded-lg"
+              >
                 Sign In
-              </button>
-              <button className="px-6 py-2 bg-blue-500 text-white rounded-lg">
+              </Link>
+              <Link
+                href="/rooms"
+                className="px-6 py-2 bg-blue-500 text-white rounded-lg"
+              >
                 Start Drawing
-              </button>
+              </Link>
             </div>
           </div>
         )}

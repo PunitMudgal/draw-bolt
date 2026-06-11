@@ -30,6 +30,17 @@ export function errorHandler(
     });
   }
 
+  // Database unreachable (Postgres not running or port not published)
+  if (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "ECONNREFUSED"
+  ) {
+    return res.status(503).json({
+      message:
+        "Database is unreachable. Ensure PostgreSQL is running and DATABASE_URL in packages/database/.env is correct.",
+    });
+  }
+
   // Anything else is an unexpected server error
   console.error("[Unhandled Error]", error);
   return res.status(500).json({ message: "Internal server error" });

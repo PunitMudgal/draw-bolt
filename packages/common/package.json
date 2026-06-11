@@ -2,7 +2,11 @@
   "name": "@repo/common",
   "version": "1.0.0",
   "exports": {
-    "./types": "./src/types.ts"
+    "./types": {
+      "types": "./src/types.ts",
+      "import": "./src/types.ts",
+      "default": "./src/types.ts"
+    }
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -13,7 +17,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "zod": "^4.3.6"
   }

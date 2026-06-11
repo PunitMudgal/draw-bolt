@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { ArrowRight, Play, Zap } from 'lucide-react';
 
 export function Hero() {
@@ -41,10 +42,13 @@ export function Hero() {
         </p>
 
         <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
-          <button className="group inline-flex items-center justify-center gap-2 rounded-xl bg-linear-to-r from-violet-500 to-fuchsia-500 px-8 py-3 font-semibold text-white transition hover:brightness-110">
+          <Link
+            href="/rooms"
+            className="group inline-flex items-center justify-center gap-2 rounded-xl bg-linear-to-r from-violet-500 to-fuchsia-500 px-8 py-3 font-semibold text-white transition hover:brightness-110"
+          >
             Start drawing - it&apos;s free
             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-          </button>
+          </Link>
           <button className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900/70 px-8 py-3 font-semibold text-white transition hover:border-slate-500">
             <Play size={16} className="text-slate-300" />
             Watch demo

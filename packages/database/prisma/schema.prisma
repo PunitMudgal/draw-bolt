@@ -1,8 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,36 +10,41 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  username  String   @unique
-  password  String
-  name      String
-  photo     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String   @unique @db.VarChar(255)
+  username  String   @unique @db.VarChar(30)
+  password  String   @db.VarChar(255) // bcrypt hash (~60 chars)
+  name      String   @db.VarChar(100)
+  photo     String?  @db.VarChar(2048)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
   rooms     Room[]
   chats     Chat[]
 }
 
 model Room {
   id        Int      @id @default(autoincrement())
-  name      String
-  slug      String   @unique
-  adminId   String
-  admin     User     @relation(fields: [adminId], references: [id])
+  name      String   @db.VarChar(100)
+  slug      String   @unique @db.VarChar(120)
+  adminId   String   @db.Uuid
+  admin     User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
   chats     Chat[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  @@index([adminId])
 }
 
 model Chat {
   id        Int      @id @default(autoincrement())
   roomId    Int
-  room      Room     @relation(fields: [roomId], references: [id])
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  message   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   String   @db.Text // JSON-serialized canvas shapes
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  @@index([roomId, createdAt])
+  @@index([userId])
 }

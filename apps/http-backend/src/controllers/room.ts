@@ -14,10 +14,15 @@ export const createRoom = async (req: Request, res: Response) => {
     throw new AppError("User id in request not found", 401);
   }
 
+  const slug = data.data.name
+    .replace(/\s+/g, "-")
+    .toLowerCase()
+    .slice(0, 120);
+
   const room = await prismaClient.room.create({
     data: {
       name: data.data.name,
-      slug: data.data.name.replace(/\s+/g, "-").toLowerCase(),
+      slug,
       adminId: userId,
     },
   });

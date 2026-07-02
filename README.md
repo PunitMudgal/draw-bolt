@@ -2,6 +2,8 @@
 
 A collaborative, Excalidraw-style whiteboard. Sketch freehand or draw basic shapes on an infinite canvas, and see edits appear live for everyone in the same room. Built with the **Canvas API + [rough.js](https://roughjs.com/)** for a hand-drawn look, backed by a real-time WebSocket layer and Postgres persistence.
 
+<img width="1895" height="977" alt="Screenshot 2026-07-02 151745" src="https://github.com/user-attachments/assets/ca9f7cd7-9cad-4ad7-a7db-b2ea44bb9d72" />
+
 ## Features
 
 - Pencil (freehand), rectangle, ellipse, and line tools

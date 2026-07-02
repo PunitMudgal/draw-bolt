@@ -1,159 +1,173 @@
-# Turborepo starter
+# DrawBolt
 
-This Turborepo starter is maintained by the Turborepo core team.
+A collaborative, Excalidraw-style whiteboard. Sketch freehand or draw basic shapes on an infinite canvas, and see edits appear live for everyone in the same room. Built with the **Canvas API + [rough.js](https://roughjs.com/)** for a hand-drawn look, backed by a real-time WebSocket layer and Postgres persistence.
 
-## Using this example
+## Features
 
-Run the following command:
+- Pencil (freehand), rectangle, ellipse, and line tools
+- Hand-drawn rendering via rough.js on top of the native Canvas API
+- Color and stroke-width selection
+- Real-time multiplayer — shapes sync live to everyone in a room over WebSockets
+- Drawing history persisted to Postgres and restored on load
+- Email/password auth with JWT
+- Create rooms and join by name
 
-```sh
-npx create-turbo@latest
+## Tech stack
+
+- **Monorepo:** [Turborepo](https://turborepo.dev/) + [pnpm](https://pnpm.io/) workspaces
+- **Frontend:** [Next.js](https://nextjs.org/) 16 (App Router), React 19, Tailwind CSS, Canvas API, rough.js
+- **HTTP backend:** Express 5 (auth, rooms, chat history)
+- **WebSocket backend:** `ws` (real-time shape broadcast + persistence)
+- **Database:** PostgreSQL via [Prisma](https://www.prisma.io/)
+- **Validation:** [Zod](https://zod.dev/) (shared schemas)
+- **Language:** TypeScript everywhere
+
+## Repository structure
+
+```
+excalidraw/
+├── apps/
+│   ├── excalidraw-fe/     # Next.js frontend (canvas UI, auth, rooms)
+│   ├── http-backend/      # Express REST API (auth, rooms, chat history)
+│   └── ws-backend/        # WebSocket server (real-time drawing sync)
+└── packages/
+    ├── common/            # Shared Zod schemas + types (Shape, Tool, auth)
+    ├── database/          # Prisma schema, client, and migrations
+    ├── backend-common/    # Shared backend config (JWT secret)
+    ├── ui/                # Shared React components
+    ├── eslint-config/     # Shared ESLint config
+    └── typescript-config/ # Shared tsconfig bases
 ```
 
-## What's inside?
+## How it works
 
-This Turborepo includes the following packages/apps:
+Each drawn shape is serialized to JSON and sent over the existing WebSocket `chat` pipeline. The WebSocket backend broadcasts it to everyone in the room and persists it to the `Chat` table. When a board loads, it fetches the room's history over HTTP and replays the shapes onto the canvas.
 
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+```mermaid
+flowchart LR
+  Board["Canvas board (Next.js)"] -->|"draw shape (JSON)"| WsClient[WebSocket client]
+  WsClient <-->|"join_room / chat"| Ws[ws-backend]
+  Ws --> Db[("Postgres (Prisma)")]
+  Ws -->|"broadcast shape"| WsClient
+  Board -->|"GET history / auth / rooms"| Http[http-backend]
+  Http --> Db
 ```
 
-Without global `turbo`, use your package manager:
+## Prerequisites
 
-```sh
-cd my-turborepo
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+- **Node.js** >= 20
+- **pnpm** 9.15.9 (`corepack enable` will provision it automatically)
+- A **PostgreSQL** database (local Docker or a hosted provider like [Neon](https://neon.tech/))
+
+## Getting started
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/PunitMudgal/excalidraw.git
+cd excalidraw
+corepack enable
+pnpm install
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+### 2. Configure environment variables
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+**`packages/database/.env`**
 
-```sh
-turbo build --filter=docs
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/excalidraw"
 ```
 
-Without global `turbo`:
+> Using a local database? You can start one quickly with Docker:
+>
+> ```bash
+> docker run -d --name postgres-db \
+>   -e POSTGRES_USER=user -e POSTGRES_PASSWORD=password -e POSTGRES_DB=excalidraw \
+>   -p 5432:5432 postgres
+> ```
 
-```sh
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+**Backends** (`apps/http-backend` and `apps/ws-backend`) — set as needed:
+
+```env
+JWT_SECRET="your-strong-secret"
+PORT=8000                       # http-backend (optional, defaults to 8000)
+FRONTEND_URL="http://localhost:3000"   # http-backend CORS origin
 ```
 
-### Develop
+**`apps/excalidraw-fe/.env.local`**
 
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
+```env
+NEXT_PUBLIC_HTTP_BACKEND_URL="http://localhost:8000"
+NEXT_PUBLIC_WS_URL="ws://localhost:8001"
 ```
 
-Without global `turbo`, use your package manager:
+### 3. Apply database migrations
 
-```sh
-cd my-turborepo
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+```bash
+cd packages/database
+pnpm exec prisma migrate deploy   # apply existing migrations
+pnpm exec prisma generate         # generate the Prisma client
+cd ../..
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+### 4. Run everything
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
+```bash
+pnpm run dev
 ```
 
-Without global `turbo`:
+This starts all apps via Turborepo:
 
-```sh
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+| App            | URL / Port              |
+| -------------- | ----------------------- |
+| Frontend       | http://localhost:3000   |
+| HTTP backend   | http://localhost:8000   |
+| WebSocket      | ws://localhost:8001     |
+
+Open http://localhost:3000, sign up, create a room, and start drawing. Open the same room in a second tab to see live collaboration.
+
+## Available scripts
+
+Run from the repo root:
+
+| Command                | Description                                  |
+| ---------------------- | -------------------------------------------- |
+| `pnpm run dev`         | Run all apps in development                  |
+| `pnpm run build`       | Build all apps and packages                  |
+| `pnpm run lint`        | Lint the whole monorepo                      |
+| `pnpm run check-types` | Type-check the whole monorepo                |
+| `pnpm run format`      | Format with Prettier                         |
+
+Target a single app with a filter, e.g.:
+
+```bash
+pnpm turbo dev --filter=excalidraw-fe
+pnpm turbo build --filter=excalidraw-fe
 ```
 
-### Remote Caching
+## API overview
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+Base URL: `http://localhost:8000`
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+| Method | Endpoint                     | Auth   | Description                       |
+| ------ | ---------------------------- | ------ | --------------------------------- |
+| POST   | `/api/v1/auth/signup`        | —      | Create a new account              |
+| POST   | `/api/v1/auth/signin`        | —      | Sign in, returns a JWT            |
+| POST   | `/api/v1/room/createroom`    | Bearer | Create a room                     |
+| GET    | `/api/v1/room/room/:slug`    | —      | Look up a room by slug            |
+| GET    | `/api/v1/chat/chats/:roomId` | —      | Fetch a room's drawing history    |
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+**WebSocket** (`ws://localhost:8001?token=<JWT>`) message types: `join_room`, `leave_room`, `chat` (carries a serialized shape).
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+## Deployment
 
-```sh
-cd my-turborepo
-turbo login
-```
+The **frontend** deploys to [Vercel](https://vercel.com/) (config in [`vercel.json`](vercel.json)). Set these environment variables in the Vercel project:
 
-Without global `turbo`, use your package manager:
+- `NEXT_PUBLIC_HTTP_BACKEND_URL` — deployed HTTP backend URL
+- `NEXT_PUBLIC_WS_URL` — deployed WebSocket URL (use `wss://` in production)
 
-```sh
-cd my-turborepo
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
+The **HTTP and WebSocket backends** require a long-running Node host (e.g. Railway, Render, or Fly.io) and a hosted Postgres database (e.g. Neon).
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+## License
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+ISC
